@@ -1,0 +1,192 @@
+{
+  "name": "AI Interview Coach",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8a656657-c885-46f9-b31c-80443d147162",
+      "name": "When chat message received",
+      "webhookId": "e9033ed5-e84d-4549-b438-5b8be18bd337"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "9b5f6cf0-7a58-4e6f-9abd-8dd1fda64ff8",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        176
+      ],
+      "id": "54df6845-da51-4966-bc8c-e53aa21b8527",
+      "name": "Webhook",
+      "webhookId": "9b5f6cf0-7a58-4e6f-9abd-8dd1fda64ff8"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/transcriptions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file",
+              "value": "={{ $binary.data.data }}"
+            },
+            {
+              "name": "model",
+              "value": "whisper-large-v3"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        176
+      ],
+      "id": "f802e423-dc62-4dad-99bb-13f0d70401d5",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "epls9tSpiaERAltu",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are an expert technical interviewer and coach for CS engineering students.\n\nYour role:\n1. Ask the candidate ONE interview question at a time — technical (DSA, OS, DBMS, CN), AI/ML, or project-based.\n2. After they answer, give structured feedback: what was correct, what was missing, and a model answer.\n3. Adapt difficulty based on their responses.\n4. When asked about the ICRTSET-2026 project (AI Mock Interview Assistant built with Electron, Groq Whisper, LLaMA 3, OpenCV Haar Cascade, ReportLab, PyInstaller), ask deep technical questions about the architecture.\n5. End each session with a score out of 10 and improvement tips.\n\nStart by asking: \"What topic would you like to practice today — DSA, AI/ML, your ICRTSET project, or HR questions?\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        496,
+        0
+      ],
+      "id": "45032b20-377b-497b-9e42-f554385d7399",
+      "name": "AI Agent",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        592,
+        240
+      ],
+      "id": "bb6749d4-4dd7-48e5-8d48-d5e569843ffe",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "k2PaIuc3V4fFOEjL",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        768,
+        240
+      ],
+      "id": "78367943-60a4-45c2-914c-a5cd142391de",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "987ee5ef-0549-4d1b-9025-b45e945442f8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1844b657789ec758779d7bde5449fe4a99c1255b04414b3be1c765a6d66353c0"
+  },
+  "nodeGroups": [],
+  "id": "eSXSLCPAYJw8fS8X",
+  "tags": []
+}
